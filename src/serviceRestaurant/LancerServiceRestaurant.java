@@ -9,8 +9,9 @@ import java.sql.SQLException;
 
 public class LancerServiceRestaurant
 {
+    private static Connection conn = null;
+
     public static void main(String[] args) throws RemoteException, SQLException {
-        Connection conn = null;
         String url = "jdbc:oracle:thin:@charlemagne.iutnc.univ-lorraine.fr:1521:infodb";
 
         try {
@@ -25,11 +26,11 @@ public class LancerServiceRestaurant
         int portService = 0;
         try {
             //On crée une instance du service
-            ServiceRestaurant serviceRestaurant = new ServiceRestaurant();
+            ServiceRestaurant serviceRestaurant = new ServiceRestaurant(conn);
             ServiceRestaurantInterface serviceRestaurantInterface = (ServiceRestaurantInterface) UnicastRemoteObject.exportObject(serviceRestaurant, portService);
 
             // Recupération du serveur
-            Registry reg = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            Registry reg = LocateRegistry.getRegistry(args[0], 1099);
             ServeurInterface serveur = (ServeurInterface) reg.lookup("serveur");
 
             // Ajout du service au serveur central

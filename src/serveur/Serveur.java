@@ -8,7 +8,8 @@ public class Serveur implements ServeurInterface {
     int indice = 0;
 
     public Serveur() {
-        listeServices = new ArrayList<>();
+        this.listeServicesRestaurant = new ArrayList<>();
+        this.listeServicesHTTP = new ArrayList<>();
     }
 
 
