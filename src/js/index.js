@@ -1,15 +1,21 @@
+
+const map = L.map('map').setView([48.6833, 6.2], 13); // Coordonnées de Nancy
+
+// Ajouter une couche de tuiles (basemap)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
 document.addEventListener("DOMContentLoaded", function () {
-
-    var map = L.map('map').setView([48.6921, 6.1844], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    // Chargement des stations VélOStan
-    velibStations(map);
+    showVelib();
 });
-function velibStations(map) {
-    // Remplacement de l'URL par celle du proxy
+function showVelib() {
+    //Effacer les marqueurs existants
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
     fetch("http://localhost:8000/systemInformation")
         .then(response => {
             if (response.ok) {
@@ -19,7 +25,6 @@ function velibStations(map) {
             }
         })
         .then(data => {
-            // Pas de modification nécessaire ici car la structure de réponse est supposée être identique
             const stationInfo = 'http://localhost:8000/stationInformation'; // URL proxy pour les informations de station
             const stationStatus = 'http://localhost:8000/stationStatus'; // URL proxy pour le statut des stations
 
@@ -43,20 +48,77 @@ function velibStations(map) {
 
                     stations.forEach(station => {
                         const { address, lat, lon, name, num_bikes_available, num_docks_available } = station;
-                        const latLng = [lat, lon];
 
-                        // Création du marqueur
-                        const marker = L.marker(latLng).addTo(map);
-                        const popup = `
-                            <strong>Nom: </strong>${name}<br>
-                            <strong>Adresse:</strong> ${address}<br>
-                            <strong>Vélos disponibles:</strong> ${num_bikes_available}<br>
-                            <strong>Places libres:</strong> ${num_docks_available}   
-                    `;
-                        marker.bindPopup(popup);
+                        // Vérifier si les coordonnées sont valides
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            const latLng = [lat, lon];
+
+                            // Création du marqueur
+                            const marker = L.marker(latLng).addTo(map);
+                            const popup = `
+                                <strong>Nom: </strong>${name}<br>
+                                <strong>Adresse:</strong> ${address}<br>
+                                <strong>Vélos disponibles:</strong> ${num_bikes_available}<br>
+                                <strong>Places libres:</strong> ${num_docks_available}
+                            `;
+                            marker.bindPopup(popup);
+                        } else {
+                            console.error(`Coordonnées invalides pour la station: ${station.station_id}`);
+                        }
                     });
                 })
                 .catch(error => console.error('Erreur lors de la récupération des données:', error));
         })
         .catch(error => console.error('Erreur lors de la récupération des données:', error));
 }
+
+
+function showTraffic() {
+    //Effacer les marqueurs existants
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
+    fetch("http://localhost:8000/trafic")
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Échec de la récupération des données: ' + response.status);
+            }
+        })
+        .then(data => {
+            const incidents = data.incidents;
+            incidents.forEach(incident => {
+                const { type, description, short_description, starttime, endtime, location } = incident;
+                const { street, polyline, location_description } = location;
+
+                // Convertir la chaîne polyline en coordonnées lat, lon
+                const [lat, lon] = polyline.split(" ").map(Number);
+
+                // Vérifier si les coordonnées sont valides
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    const latLng = [lat, lon];
+
+                    // Création du marqueur
+                    const marker = L.marker(latLng).addTo(map);
+                    const popup = `
+                        <strong>Type: </strong>${type}<br>
+                        <strong>Description: </strong>${description}<br>
+                        <strong>Rue: </strong>${street}<br>
+                        <strong>Lieu: </strong>${location_description}<br>
+                        <strong>Début: </strong>${starttime}<br>
+                        <strong>Fin: </strong>${endtime}<br>
+                    `;
+                    marker.bindPopup(popup);
+                } else {
+                    console.error(`Coordonnées invalides pour l'incident: ${incident.id}`);
+                }
+            });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données:', error));
+}
+
+
+
