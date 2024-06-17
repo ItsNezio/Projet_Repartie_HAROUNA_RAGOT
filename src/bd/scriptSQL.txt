@@ -52,5 +52,16 @@ insert into restaurant (id, nom, adresse, latitude, longitude) values (3, 'Chick
 insert into restaurant (id, nom, adresse, latitude, longitude) values (4, 'Bosphore II', '34 Bis Bd Henri Barbusse, 54510 Tomblaine', 48.68465168, 6.21377883);
 insert into restaurant (id, nom, adresse, latitude, longitude) values (5, 'Le bistrot Sympa','9 Bd Henri Barbusse, 54510 Tomblaine', 48.68657340, 6.21137082);
 
+-- Tuples de Tabl
+insert into tabl values(10,4);
+insert into tabl values(11,6);
+insert into tabl values(12,8);
+insert into tabl values(13,4);
+insert into tabl values(14,6);
+insert into tabl values(15,4);
+insert into tabl values(16,4);
+insert into tabl values(17,6);
+insert into tabl values(18,2);
+insert into tabl values(19,4);
 
 
