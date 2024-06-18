@@ -149,16 +149,69 @@ function showRestaurants() {
 
                     // Création du marqueur pour le restaurant
                     const marker = L.marker(latLng).addTo(map);
-                    const popup = `
+
+                    // Création du contenu HTML du popup avec bouton de réservation
+                    const popupContent = `
                         <strong>Nom: </strong>${nom}<br>
                         <strong>Adresse:</strong> ${adresse}<br>
+                        <button onclick="showReservationForm('${nom}', '${adresse}', '${latitude}', '${longitude}')">Réserver</button>
                     `;
-                    marker.bindPopup(popup);
+
+                    marker.bindPopup(popupContent);
                 } else {
                     console.error(`Coordonnées invalides pour le restaurant: ${nom}`);
                 }
             });
         })
         .catch(error => console.error('Erreur lors de la récupération des données des restaurants:', error));
+}
+
+function showReservationForm(nom, adresse, latitude, longitude) {
+    // Afficher le formulaire de réservation
+    const reservationForm = document.getElementById('reservation-form');
+    reservationForm.style.display = 'block';
+
+    document.getElementById('restaurantName').value = nom;
+}
+function submitReservation(event) {
+    event.preventDefault(); // Empêcher le rechargement de la page par défaut
+
+    const restaurantName = document.getElementById('restaurantName').value;
+    const nbPersons = document.getElementById('nbPersons').value;
+    const lastName = document.getElementById('lastName').value;
+    const firstName = document.getElementById('firstName').value;
+    const telNumber = document.getElementById('telNumber').value;
+
+    const reservationData = {
+        nomRestaurant: restaurantName,
+        nbPersonne: nbPersons,
+        nomClient: lastName,
+        prenomClient: firstName,
+        telClient: telNumber
+    };
+
+    // Envoyer les données de réservation au serveur
+    fetch('http://localhost:8000/restaurants', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reservationData)
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Échec de la réservation: ' + response.status);
+            }
+        })
+        .then(data => {
+            console.log('Réservation réussie:', data);
+            document.getElementById('reservation-message').textContent = 'Réservation réussie !';
+        })
+        .catch(error => {
+            console.error('Erreur lors de la réservation:', error);
+            document.getElementById('reservation-message').textContent = 'Échec de la réservation.';
+        });
 }
 

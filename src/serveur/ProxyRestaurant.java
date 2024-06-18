@@ -15,7 +15,9 @@ public class ProxyRestaurant implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        // Ajoutez l'appel pour les en-têtes CORS ici
         addCorsHeaders(exchange);
+
         if ("GET".equals(exchange.getRequestMethod())) {
             try {
                 ServiceRestaurantInterface serviceRestaurant = serveur.demanderServiceRestaurant();
@@ -96,6 +98,7 @@ public class ProxyRestaurant implements HttpHandler {
         sb.append("]");
         return sb.toString();
     }
+
     private Reservation fromJson(String json) {
         String[] parts = json.replace("{", "").replace("}", "").replace("\"", "").split(",");
         Date dateReservation = null;
@@ -128,11 +131,10 @@ public class ProxyRestaurant implements HttpHandler {
         return new Reservation(dateReservation, nbPersonne, nomClient, prenomClient, telClient);
     }
 
-
     public void addCorsHeaders(HttpExchange exchange) {
         Headers headers = exchange.getResponseHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Methods", "GET, OPTIONS");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
         headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
     }
 }

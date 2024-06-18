@@ -63,7 +63,7 @@ public class Proxy implements HttpHandler {
     public void addCorsHeaders(HttpExchange exchange) {
         Headers headers = exchange.getResponseHeaders();
         headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Methods", "GET, OPTIONS");
+        headers.add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
         headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization");
     }
 }

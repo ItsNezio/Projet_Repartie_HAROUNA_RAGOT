@@ -15,6 +15,30 @@
 </div>
 <div id="map"></div>
 
+<!-- Formulaire de réservation -->
+<div id="reservation-form" style="display: none;">
+    <h2>Réserver un restaurant</h2>
+    <form onsubmit="submitReservation(event)">
+        <label for="restaurantName">Nom du restaurant:</label><br>
+        <input type="text" id="restaurantName" name="restaurantName" readonly><br><br>
+
+        <label for="nbPersons">Nombre de personnes:</label><br>
+        <input type="number" id="nbPersons" name="nbPersons" required><br><br>
+
+        <label for="lastName">Nom:</label><br>
+        <input type="text" id="lastName" name="lastName" required><br><br>
+
+        <label for="firstName">Prénom:</label><br>
+        <input type="text" id="firstName" name="firstName" required><br><br>
+
+        <label for="telNumber">Numéro de téléphone:</label><br>
+        <input type="tel" id="telNumber" name="telNumber" pattern="[0-9]{10}" required><br><br>
+
+        <button type="submit">Réserver</button>
+    </form>
+    <p id="reservation-message"></p>
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="index.js"></script>
 </body>
