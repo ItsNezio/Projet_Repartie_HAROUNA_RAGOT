@@ -1,7 +1,6 @@
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -24,9 +23,7 @@ public class Client {
             System.out.println("Entrez le nom du restaurant pour lequel vous souhaitez réserver une table :");
             String nomRestaurant = scanner.nextLine();
 
-
             // Réserver une table
-            // Création d'une date de début pour la réservation
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             Date dateDebut = null;
             try {
@@ -34,7 +31,7 @@ public class Client {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-             // public Reservation(Date debut, int nbPers, String nom, String prenom, String coordonneesTel)
+
             java.sql.Date dateDebutSql = new java.sql.Date(dateDebut.getTime());
             Reservation reservation = new Reservation(dateDebutSql, 4, "Doe", "John", "0123456789");
             boolean success = serviceRestaurant.reserverTable(nomRestaurant, reservation);
