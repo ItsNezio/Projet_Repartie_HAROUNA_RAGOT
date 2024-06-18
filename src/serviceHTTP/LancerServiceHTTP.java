@@ -13,7 +13,7 @@ public class LancerServiceHTTP {
             ServiceHTTPInterface serviceHTTPInterface = (ServiceHTTPInterface) UnicastRemoteObject.exportObject(serviceHTTP, portService);
 
             // Recupération du serveur
-            Registry reg = LocateRegistry.getRegistry(args[0], Integer.parseInt(args[1]));
+            Registry reg = LocateRegistry.getRegistry(args[0], 1099);
             ServeurInterface serveur = (ServeurInterface) reg.lookup("serveur");
 
             // Ajout du service au serveur central

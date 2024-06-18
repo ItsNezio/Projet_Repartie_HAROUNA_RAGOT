@@ -139,7 +139,7 @@ function showRestaurants() {
             data.forEach(restaurant => {
                 const { nom, adresse, latitude, longitude } = restaurant;
 
-                // Remplacer les virgules par des points pour la conversion
+                // Remplacer les virgules par des points pour la conversion$
                 const lat = latitude.replace(',', '.');
                 const lon = longitude.replace(',', '.');
 
