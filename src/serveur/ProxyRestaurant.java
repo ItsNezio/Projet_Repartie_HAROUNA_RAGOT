@@ -1,8 +1,9 @@
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.Headers;
-import java.io.IOException;
-import java.io.OutputStream;
+
+import java.io.*;
+import java.sql.Date;
 import java.util.List;
 
 public class ProxyRestaurant implements HttpHandler {
@@ -32,6 +33,43 @@ public class ProxyRestaurant implements HttpHandler {
                 os.write(errorMessage.getBytes());
                 os.close();
             }
+        } else if ("POST".equals(exchange.getRequestMethod())) {
+            // Gestion des requêtes POST
+            try {
+                // Lire le corps de la requête
+                InputStream is = exchange.getRequestBody();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                reader.close();
+                is.close();
+
+                // Extraire les données de la réservation du JSON
+                String requestBody = sb.toString();
+                Reservation reservation = fromJson(requestBody);
+
+                // Ajouter la réservation via le service restaurant
+                ServiceRestaurantInterface serviceRestaurant = serveur.demanderServiceRestaurant();
+                boolean success = serviceRestaurant.reserverTable(reservation.nomClient, reservation);
+
+                // Envoyer une réponse appropriée
+                String response = "{\"success\": " + success + "}";
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.getBytes().length);
+                OutputStream os = exchange.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            } catch (Exception e) {
+                String errorMessage = "Erreur serveur";
+                exchange.sendResponseHeaders(500, errorMessage.length());
+                OutputStream os = exchange.getResponseBody();
+                os.write(errorMessage.getBytes());
+                os.close();
+            }
+
         } else {
             // Gestion des méthodes non autorisées
             exchange.sendResponseHeaders(405, -1);
@@ -58,6 +96,38 @@ public class ProxyRestaurant implements HttpHandler {
         sb.append("]");
         return sb.toString();
     }
+    private Reservation fromJson(String json) {
+        String[] parts = json.replace("{", "").replace("}", "").replace("\"", "").split(",");
+        Date dateReservation = null;
+        int nbPersonne = 0;
+        String nomClient = "";
+        String prenomClient = "";
+        String telClient = "";
+        for (String part : parts) {
+            String[] pair = part.split(":");
+            String key = pair[0].trim();
+            String value = pair[1].trim();
+            switch (key) {
+                case "dateReservation":
+                    dateReservation = Date.valueOf(value);
+                    break;
+                case "nbPersonne":
+                    nbPersonne = Integer.parseInt(value);
+                    break;
+                case "nomClient":
+                    nomClient = value;
+                    break;
+                case "prenomClient":
+                    prenomClient = value;
+                    break;
+                case "telClient":
+                    telClient = value;
+                    break;
+            }
+        }
+        return new Reservation(dateReservation, nbPersonne, nomClient, prenomClient, telClient);
+    }
+
 
     public void addCorsHeaders(HttpExchange exchange) {
         Headers headers = exchange.getResponseHeaders();
