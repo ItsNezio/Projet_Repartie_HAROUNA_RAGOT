@@ -8,6 +8,7 @@ public class Reservation implements Serializable {
     public String prenomClient;
     public String telClient;
 
+
     public Reservation(Date debut, int nbPers, String nom, String prenom, String coordonneesTel) {
         this.dateReservation = debut;
         this.nbPersonne = nbPers;

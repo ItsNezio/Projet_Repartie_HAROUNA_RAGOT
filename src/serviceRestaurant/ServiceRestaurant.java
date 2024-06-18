@@ -5,13 +5,13 @@ import java.util.Date;
 import java.util.List;
 
 public class ServiceRestaurant implements ServiceRestaurantInterface {
-
-    Connection conn;
+    private Connection conn;
 
     public ServiceRestaurant(Connection conn) {
         this.conn = conn;
     }
 
+    @Override
     public List<Restaurant> getRestaurants() throws RemoteException {
         List<Restaurant> restaurants = new ArrayList<>();
         String sql = "SELECT id, nom, adresse, latitude, longitude FROM restaurant";
@@ -30,51 +30,53 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        for (Restaurant restaurant : restaurants) {
-            System.out.println(restaurant.nom + " (" + restaurant.adresse + ")");
-        }
-
         return restaurants;
     }
 
-    private int tablesDispo(int restaurantId) {
-        int nbTables = -1;
-        try {
-            String sql = "SELECT COUNT(*) FROM tabl WHERE restaurant_id = ? AND numtab NOT IN (SELECT numtab FROM reservation)";
-            PreparedStatement stmt = this.conn.prepareStatement(sql);
+    private int tablesDispo(int restaurantId, Date dateDebut, Date dateFin) throws SQLException {
+        int numTab = -1;
+        String sql = "SELECT numtab FROM tabl WHERE restaurant_id = ? " +
+                "AND numtab NOT IN (SELECT numtab FROM reservation WHERE restaurant_id = ? AND datres BETWEEN ? AND ?)";
+        try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
             stmt.setInt(1, restaurantId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                nbTables = rs.getInt(1);
+            stmt.setInt(2, restaurantId);
+            stmt.setDate(3, new java.sql.Date(dateDebut.getTime()));
+            stmt.setDate(4, new java.sql.Date(dateFin.getTime()));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    numTab = rs.getInt("numtab");
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return nbTables;
+        System.out.println("Table disponible : " + numTab);
+        return numTab;
     }
 
+    @Override
     public boolean reserverTable(String nomRestaurant, Reservation reservation) throws RemoteException {
         boolean reservationConfirmee = false;
         try {
             int restaurantId = getRestaurantIdByName(nomRestaurant);
-            int tableDisponible = tablesDispo(restaurantId);
-            if (tableDisponible > 0) {
+            System.out.println("ID du restaurant : " + restaurantId);
+            Date dateFin = new Date(reservation.dateReservation.getTime() + 2 * 60 * 60 * 1000); // 2 heures plus tard
+            int numTab = tablesDispo(restaurantId, reservation.dateReservation, dateFin);
+            if (numTab > 0) {
                 this.conn.setAutoCommit(false);
-                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
-                PreparedStatement stmt = this.conn.prepareStatement(sql);
-                stmt.setInt(1, getMaxReservationId() + 1);
-                stmt.setDate(2, new java.sql.Date(reservation.dateReservation.getTime()));
-                stmt.setInt(3, reservation.nbPersonne);
-                stmt.setString(4, reservation.nomClient);
-                stmt.setString(5, reservation.prenomClient);
-                stmt.setString(6, reservation.telClient);
-                stmt.setInt(7, restaurantId);
-                stmt.executeUpdate();
-
+                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id, numtab) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
+                    stmt.setInt(1, getMaxReservationId() + 1);
+                    stmt.setDate(2, new java.sql.Date(reservation.dateReservation.getTime()));
+                    stmt.setInt(3, reservation.nbPersonne);
+                    stmt.setString(4, reservation.nomClient);
+                    stmt.setString(5, reservation.prenomClient);
+                    stmt.setString(6, reservation.telClient);
+                    stmt.setInt(7, restaurantId);
+                    stmt.setInt(8, numTab);
+                    stmt.executeUpdate();
+                }
                 this.conn.commit();
                 reservationConfirmee = true;
-                System.out.println("Réservation confirmée.");
+                System.out.println("Réservation confirmée");
             } else {
                 System.out.println("Aucune table n'est disponible.");
             }
@@ -103,11 +105,12 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
         String sql = "SELECT id FROM restaurant WHERE nom = ?";
         try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
             stmt.setString(1, name);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("id");
-            } else {
-                throw new SQLException("Le restaurant suivant n'existe pas : " + name);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    throw new SQLException("Le restaurant suivant n'existe pas : " + name);
+                }
             }
         }
     }
