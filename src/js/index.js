@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     showVelib();
 });
 function showVelib() {
-    //Effacer les marqueurs existants
+    //Effacer les marqueurs existant
     map.eachLayer(layer => {
         if (layer instanceof L.Marker) {
             map.removeLayer(layer);
