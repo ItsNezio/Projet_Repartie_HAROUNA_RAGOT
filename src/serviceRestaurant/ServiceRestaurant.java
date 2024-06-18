@@ -52,27 +52,49 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
         return numTab;
     }
 
+    private int tablesDispoRandom(int restaurantId, Date dateDebut, Date dateFin) throws SQLException {
+        int numTab = -1;
+        String sql = "SELECT count(*) FROM tabl WHERE restaurant_id = ? ";
+        try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
+            stmt.setInt(1, restaurantId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    numTab = rs.getInt("count(*)");
+                    numTab = (int) (Math.random() * numTab) + 1;
+                }
+            }
+        }
+        System.out.println("Table disponible : " + numTab);
+        return numTab;
+    }
+
     @Override
     public boolean reserverTable(String nomRestaurant, Reservation reservation) throws RemoteException {
         boolean reservationConfirmee = false;
         try {
             int restaurantId = getRestaurantIdByName(nomRestaurant);
             System.out.println("ID du restaurant : " + restaurantId);
-            Date dateFin = new Date(reservation.dateReservation.getTime() + 2 * 60 * 60 * 1000); // 2 heures plus tard
-            int numTab = tablesDispo(restaurantId, reservation.dateReservation, dateFin);
-            if (numTab > 0) {
+            int numTab = 1;
+            if (numTab >= 0) {
+                System.out.println("test 1");
                 this.conn.setAutoCommit(false);
+                System.out.println("test 2");
                 String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id, numtab) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
+                    System.out.println("test 3");
                     stmt.setInt(1, getMaxReservationId() + 1);
-                    stmt.setDate(2, new java.sql.Date(reservation.dateReservation.getTime()));
+                    System.out.println("test 3.1");
+                    stmt.setDate(2,null);
+                    System.out.println("test 3.2");
                     stmt.setInt(3, reservation.nbPersonne);
                     stmt.setString(4, reservation.nomClient);
                     stmt.setString(5, reservation.prenomClient);
                     stmt.setString(6, reservation.telClient);
                     stmt.setInt(7, restaurantId);
-                    stmt.setInt(8, numTab);
+                    stmt.setInt(8, 1);
+                    System.out.println("test 3.5");
                     stmt.executeUpdate();
+                    System.out.println("test 4");
                 }
                 this.conn.commit();
                 reservationConfirmee = true;

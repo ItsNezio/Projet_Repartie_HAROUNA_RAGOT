@@ -16,6 +16,7 @@ public class ProxyHTTP implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if ("GET".equals(exchange.getRequestMethod())) {
+            addCorsHeaders(exchange);
             try {
                 ServiceHTTPInterface serviceHTTP = serveur.demanderServiceHTTP();
                 String response = serviceHTTP.fetchData();

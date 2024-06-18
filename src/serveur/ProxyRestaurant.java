@@ -18,7 +18,12 @@ public class ProxyRestaurant implements HttpHandler {
         // Ajoutez l'appel pour les en-têtes CORS ici
         addCorsHeaders(exchange);
 
+        if ("OPTIONS".equals(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1); // Pas de contenu pour OPTIONS
+            return;
+        }
         if ("GET".equals(exchange.getRequestMethod())) {
+
             try {
                 ServiceRestaurantInterface serviceRestaurant = serveur.demanderServiceRestaurant();
                 List<Restaurant> restaurants = serviceRestaurant.getRestaurants();
@@ -51,11 +56,12 @@ public class ProxyRestaurant implements HttpHandler {
 
                 // Extraire les données de la réservation du JSON
                 String requestBody = sb.toString();
-                Reservation reservation = fromJson(requestBody);
+                String[] nomRestaurant = new String[1];
+                Reservation reservation = fromJson(requestBody, nomRestaurant);
 
                 // Ajouter la réservation via le service restaurant
                 ServiceRestaurantInterface serviceRestaurant = serveur.demanderServiceRestaurant();
-                boolean success = serviceRestaurant.reserverTable(reservation.nomClient, reservation);
+                boolean success = serviceRestaurant.reserverTable(nomRestaurant[0], reservation);
 
                 // Envoyer une réponse appropriée
                 String response = "{\"success\": " + success + "}";
@@ -98,8 +104,8 @@ public class ProxyRestaurant implements HttpHandler {
         sb.append("]");
         return sb.toString();
     }
-
-    private Reservation fromJson(String json) {
+    //nomRestaurant parametre out/ in
+    private Reservation fromJson(String json, String[] nomRestaurant ) {
         String[] parts = json.replace("{", "").replace("}", "").replace("\"", "").split(",");
         Date dateReservation = null;
         int nbPersonne = 0;
@@ -125,6 +131,9 @@ public class ProxyRestaurant implements HttpHandler {
                     break;
                 case "telClient":
                     telClient = value;
+                    break;
+                case "nomRestaurant":
+                    nomRestaurant[0] = value;
                     break;
             }
         }

@@ -74,12 +74,13 @@ function showVelib() {
 
 
 function showTraffic() {
-    //Effacer les marqueurs existants
+    // Effacer les marqueurs existants
     map.eachLayer(layer => {
         if (layer instanceof L.Marker) {
             map.removeLayer(layer);
         }
     });
+
     fetch("http://localhost:8000/trafic")
         .then(response => {
             if (response.ok) {
@@ -119,6 +120,8 @@ function showTraffic() {
         })
         .catch(error => console.error('Erreur lors de la récupération des données:', error));
 }
+
+
 function showRestaurants() {
     // Effacer les marqueurs existants
     map.eachLayer(layer => {
