@@ -61,7 +61,7 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
             int tableDisponible = tablesDispo(restaurantId);
             if (tableDisponible > 0) {
                 this.conn.setAutoCommit(false);
-                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id,numtab) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
                 PreparedStatement stmt = this.conn.prepareStatement(sql);
                 stmt.setInt(1, getMaxReservationId() + 1);
                 stmt.setDate(2, new java.sql.Date(reservation.dateReservation.getTime()));
@@ -70,6 +70,7 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
                 stmt.setString(5, reservation.prenomClient);
                 stmt.setString(6, reservation.telClient);
                 stmt.setInt(7, restaurantId);
+                stmt.setInt(8, numtab);
                 stmt.executeUpdate();
 
                 this.conn.commit();

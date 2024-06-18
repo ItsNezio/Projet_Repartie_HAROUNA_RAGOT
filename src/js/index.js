@@ -119,6 +119,46 @@ function showTraffic() {
         })
         .catch(error => console.error('Erreur lors de la récupération des données:', error));
 }
+function showRestaurants() {
+    // Effacer les marqueurs existants
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
 
+    fetch("http://localhost:8000/restaurants")
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Échec de la récupération des données des restaurants: ' + response.status);
+            }
+        })
+        .then(data => {
+            data.forEach(restaurant => {
+                const { nom, adresse, latitude, longitude } = restaurant;
 
+                // Remplacer les virgules par des points pour la conversion
+                const lat = latitude.replace(',', '.');
+                const lon = longitude.replace(',', '.');
+
+                // Vérifier si les coordonnées sont valides
+                if (!isNaN(parseFloat(lat)) && !isNaN(parseFloat(lon))) {
+                    const latLng = [parseFloat(lat), parseFloat(lon)];
+
+                    // Création du marqueur pour le restaurant
+                    const marker = L.marker(latLng).addTo(map);
+                    const popup = `
+                        <strong>Nom: </strong>${nom}<br>
+                        <strong>Adresse:</strong> ${adresse}<br>
+                    `;
+                    marker.bindPopup(popup);
+                } else {
+                    console.error(`Coordonnées invalides pour le restaurant: ${nom}`);
+                }
+            });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données des restaurants:', error));
+}
 

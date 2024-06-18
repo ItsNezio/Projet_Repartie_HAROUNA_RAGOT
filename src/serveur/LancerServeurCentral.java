@@ -26,6 +26,7 @@ public class LancerServeurCentral {
             serveurProxy.createContext("/stationInformation", new Proxy("https://transport.data.gouv.fr/gbfs/nancy/station_information.json"));
             serveurProxy.createContext("/stationStatus", new Proxy("https://transport.data.gouv.fr/gbfs/nancy/station_status.json"));
             serveurProxy.createContext("/trafic", new Proxy("https://carto.g-ny.org/data/cifs/cifs_waze_v2.json"));
+            serveurProxy.createContext("/restaurants",new ProxyRestaurant(serveur));
             serveurProxy.setExecutor(null);
             serveurProxy.start();
             System.out.println("Proxy lancé sur le port 8000");
