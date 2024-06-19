@@ -74,8 +74,7 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
         try {
             int restaurantId = getRestaurantIdByName(nomRestaurant);
             System.out.println("ID du restaurant : " + restaurantId);
-            int numTab = 1;
-            if (numTab >= 0) {
+            if (true) {
                 System.out.println("test 1");
                 this.conn.setAutoCommit(false);
                 System.out.println("test 2");
