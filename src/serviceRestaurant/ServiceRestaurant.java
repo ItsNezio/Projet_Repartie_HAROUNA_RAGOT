@@ -79,7 +79,7 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
                 System.out.println("test 1");
                 this.conn.setAutoCommit(false);
                 System.out.println("test 2");
-                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id, numtab) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO reservation (numres, datres, nbpers, nom, prenom, coordonnees_tel, restaurant_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement stmt = this.conn.prepareStatement(sql)) {
                     System.out.println("test 3");
                     stmt.setInt(1, getMaxReservationId() + 1);
@@ -91,7 +91,6 @@ public class ServiceRestaurant implements ServiceRestaurantInterface {
                     stmt.setString(5, reservation.prenomClient);
                     stmt.setString(6, reservation.telClient);
                     stmt.setInt(7, restaurantId);
-                    stmt.setInt(8, 1);
                     System.out.println("test 3.5");
                     stmt.executeUpdate();
                     System.out.println("test 4");
