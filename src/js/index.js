@@ -169,6 +169,50 @@ function showRestaurants() {
         .catch(error => console.error('Erreur lors de la récupération des données des restaurants:', error));
 }
 
+
+function showEtablissements() {
+    // Effacer les marqueurs existants
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
+        }
+    });
+
+    fetch("http://localhost:8000/etablissements")
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Échec de la récupération des données des établissements: ' + response.status);
+            }
+        })
+        .then(data => {
+            data.results.forEach(etablissement => {
+                const { implantation_lib, adresse_uai, coordonnees } = etablissement;
+                const { lon, lat } = coordonnees;
+
+                // Vérifier si les coordonnées sont valides
+                if (!isNaN(parseFloat(lat)) && !isNaN(parseFloat(lon))) {
+                    const latLng = [parseFloat(lat), parseFloat(lon)];
+
+                    // Création du marqueur pour l'établissement
+                    const marker = L.marker(latLng).addTo(map);
+
+                    // Création du contenu HTML du popup avec plus d'informations
+                    const popupContent = `
+                        <strong>Nom: </strong>${implantation_lib}<br>
+                        <strong>Adresse:</strong> ${adresse_uai}<br>
+                    `;
+
+                    marker.bindPopup(popupContent);
+                } else {
+                    console.error(`Coordonnées invalides pour l'établissement: ${implantation_lib}`);
+                }
+            });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des données des établissements:', error));
+}
+
 function showReservationForm(nom, adresse, latitude, longitude) {
     // Afficher le formulaire de réservation
     const reservationForm = document.getElementById('reservation-form');
